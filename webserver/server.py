@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -13,6 +13,7 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, 'webserver', "templates")
 STATIC_DIR = os.path.join(BASE_DIR, 'webserver', "static")
 VIDEOS_DIR = os.path.normpath(os.path.join(BASE_DIR, "data", "video"))
 CONFIGS_DIR = os.path.join(BASE_DIR, "configs")
+KNOWLEDGE_DIR = os.path.normpath(os.path.join(BASE_DIR, "data", "knowledge"))
 
 # Create directories if they don't exist
 os.makedirs(TEMPLATES_DIR, exist_ok=True)
@@ -20,14 +21,55 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(VIDEOS_DIR, exist_ok=True)
 os.makedirs(CONFIGS_DIR, exist_ok=True)
 
+# Create knowledge dir if it does not exist
+os.makedirs(KNOWLEDGE_DIR, exist_ok=True)
+
 # Setup templates and static files
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/videos", StaticFiles(directory=VIDEOS_DIR), name="videos")
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.post("/submit_knowledge")
+async def submit_knowledge(
+    request: Request,
+    bot_token: str = Form(...),
+    bot_picture: UploadFile = File(...),
+    files: list[UploadFile] = File(...)
+):
+    """
+    Endpoint to receive knowledge base information from the frontend.
+    """
+    try:
+        # Save bot picture
+        picture_path = os.path.join(KNOWLEDGE_DIR, bot_picture.filename)
+        with open(picture_path, "wb") as pic_file:
+            pic_file.write(await bot_picture.read())
+
+        # Save files
+        saved_files = []
+        for file in files:
+            file_path = os.path.join(KNOWLEDGE_DIR, file.filename)
+            with open(file_path, "wb") as f:
+                f.write(await file.read())
+            saved_files.append(file_path)
+
+        # Save all the data to a JSON file
+        data = {
+            "bot_token": bot_token,
+            "bot_picture": bot_picture.filename,
+            "files": [os.path.basename(f) for f in saved_files]
+        }
+        json_file_path = os.path.join(KNOWLEDGE_DIR, "knowledge_data.json")
+        with open(json_file_path, "w") as json_file:
+            json.dump(data, json_file, indent=4)
+        return {"message": "Knowledge base data saved successfully!", "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/videos", response_class=HTMLResponse)
 async def video_list(request: Request):
