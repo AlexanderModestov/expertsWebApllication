@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .video-container {
+            max-width: 90%;
+            text-align: center;
+        }
+        video {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <h1 id="videoTitle"></h1>
+        <video id="videoPlayer" controls>
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoUrl = urlParams.get('video');
+            const videoTitle = urlParams.get('title');
+
+            if (videoUrl && videoTitle) {
+                const videoPlayer = document.getElementById('videoPlayer');
+                const titleElement = document.getElementById('videoTitle');
+
+                videoPlayer.src = decodeURIComponent(videoUrl);
+                titleElement.textContent = decodeURIComponent(videoTitle);
+            } else {
+                document.body.innerHTML = '<h1>Error: Video not found</h1>';
+            }
+        });
+    </script>
+</body>
+</html>

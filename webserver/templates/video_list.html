@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Available Videos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .video-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            padding: 20px;
+        }
+        .video-title {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .video-description {
+            color: #666;
+            margin: 10px 0;
+        }
+        .details-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .details-link:hover {
+            text-decoration: underline;
+        }
+        .details-content {
+            display: none;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .watch-link {
+            color: #007bff;
+            text-decoration: none;
+            display: block;
+            margin-top: 15px;
+        }
+        .watch-link:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Доступные эфиры</h1>
+        {% for video in videos %}
+        <div class="video-card">
+            <div class="video-title">{{ video.info.name }}</div>
+            <div class="video-description">
+                <strong>Краткое содержание эфира:</strong><br>
+                {{ video.info.short_description }}
+            </div>
+            <a class="details-link" onclick="toggleDetails(this)">Подробнее ▼</a>
+            <div class="details-content">
+                {{ video.info.long_description }}
+            </div>
+            <a href="/watch/{{ video.filename }}" class="watch-link">Смотреть эфир</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function toggleDetails(link) {
+            const detailsContent = link.nextElementSibling;
+            const isHidden = detailsContent.style.display === 'none' || detailsContent.style.display === '';
+            
+            detailsContent.style.display = isHidden ? 'block' : 'none';
+            link.textContent = isHidden ? 'Скрыть ▲' : 'Подробнее ▼';
+        }
+    </script>
+</body>
+</html> 
